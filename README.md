@@ -1,8 +1,10 @@
-# React + Vite
+# AlphaTwelve Dashboard Assessment Using - React + Vite
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+Assessment Preview link - https://oh-alphatwelve.netlify.app
 
-Currently, two official plugins are available:
+![Desktop view - Dark mode](https://drive.google.com/uc?export=view&id=1kHBcnB_ffEaDu9tDf96Qps_Tyx8kyQJh)
+![Desktop view - Light mode](https://drive.google.com/uc?export=view&id=1mH2AY7ddECb4JeHIdJThhAzC6IdXs-Z0)
+![Mobile view - Dark mode](https://drive.google.com/uc?export=view&id=1HRGBbFLjQSUfodw8inXP9h12U-pNi7xu)
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react/README.md) uses [Babel](https://babeljs.io/) for Fast Refresh
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react-swc) uses [SWC](https://swc.rs/) for Fast Refresh
+Setup - Clone the project. npm install, cd <project folder>, npm run dev
+
