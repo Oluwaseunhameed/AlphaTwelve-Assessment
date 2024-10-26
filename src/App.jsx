@@ -13,12 +13,14 @@ import AppLayout from "./ui/AppLayout";
 
 import { SidebarProvider } from "./context/SidebarContext";
 import { DarkModeProvider } from "./context/DarkModeContext";
+import { EventProvider } from './context/EventContext';
 
 function App() {
   return (
     <DarkModeProvider>
       <GlobalStyles />
       <SidebarProvider>
+        <EventProvider>
         <BrowserRouter>
           <Routes>
             <Route element={<AppLayout />}>
@@ -34,6 +36,7 @@ function App() {
             <Route path="*" element={<PageNotFound />} />
           </Routes>
         </BrowserRouter>
+        </EventProvider>
       </SidebarProvider>
     </DarkModeProvider>
   );

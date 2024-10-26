@@ -1,7 +1,7 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import styled from "styled-components";
-import { events } from "../data";
 import { useDarkMode } from "../context/DarkModeContext";
+import { useEventContext } from "../context/EventContext";
 import Popup from "./Popup";
 
 const AccordionContainer = styled.div`
@@ -11,10 +11,7 @@ const AccordionContainer = styled.div`
   padding: 0 0 2rem;
   border-radius: 0.8rem;
   color: var(--color-grey-700);
-  /* max-width: 120rem; */
-  /* margin: 0 auto; */
   font-size: 1.4rem;
-  /* outline: 2px solid red; */
 `;
 
 const HeaderRow = styled.div`
@@ -244,43 +241,38 @@ const RowsDropdown = styled.select`
 
 const AccordionEventTable = () => {
   const { isDarkMode } = useDarkMode();
+  const { filteredEvents } = useEventContext();
   const [currentPage, setCurrentPage] = useState(1);
-  const [openIndex] = useState(null);
-  const [isPopupOpen, setIsPopupOpen] = useState(false); // Track pop-up visibility
-  const [popupEvent, setPopupEvent] = useState(null); // Track the clicked event
+  const [rowsPerPage, setRowsPerPage] = useState(5);
+  const [isOpen, setIsOpen] = useState({}); // Manage open states for each item
 
-  const rowsPerPage = 5;
-  const totalPages = Math.ceil(events.length / rowsPerPage);
-  const currentData = events.slice(
+  const totalPages = Math.ceil(filteredEvents.length / rowsPerPage);
+
+  useEffect(() => {
+    setCurrentPage(1); // Reset page number when filtered events change
+  }, [filteredEvents]);
+
+  const handleToggleAccordion = (eventId) => {
+    setIsOpen((prev) => ({ ...prev, [eventId]: !prev[eventId] }));
+  };
+
+  const handlePrevPage = () => {
+    if (currentPage > 1) setCurrentPage((prev) => prev - 1);
+  };
+
+  const handleNextPage = () => {
+    if (currentPage < totalPages) setCurrentPage((prev) => prev + 1);
+  };
+
+  const handleRowsChange = (event) => {
+    setRowsPerPage(Number(event.target.value));
+    setCurrentPage(1); // Reset to first page when rows per page changes
+  };
+
+  const paginatedEvents = filteredEvents.slice(
     (currentPage - 1) * rowsPerPage,
     currentPage * rowsPerPage
   );
-
-  // const toggleAccordion = (index) =>
-  //   setOpenIndex(openIndex === index ? null : index);
-
-  const handlePageChange = (newPage) => {
-    if (newPage > 0 && newPage <= totalPages) {
-      setCurrentPage(newPage);
-    }
-  };
-
-  // const handleEventClick = (event) => {
-  //   setSelectedEvent(event); // Set the selected event details
-  //   setIsPopupOpen(true); // Open the pop-up
-  // };
-
-  // This function opens the pop-up
-  const handlePopupOpen = (event) => {
-    setPopupEvent(event); // Set the clicked event data
-    setIsPopupOpen(true); // Show the pop-up
-  };
-
-  // This function closes the pop-up
-  const handlePopupClose = () => {
-    setIsPopupOpen(false); // Hide the pop-up
-    setPopupEvent(null); // Clear the event data
-  };
 
   return (
     <AccordionContainer>
@@ -291,11 +283,11 @@ const AccordionEventTable = () => {
         <HeaderColumn>Status</HeaderColumn>
       </HeaderRow>
 
-      {currentData.map((event, index) => (
-        <div key={index}>
-          <AccordionItem onClick={() => handlePopupOpen(event)}>
-            <AccordionContent>
-              <Column isOpen={openIndex === index}>{event.name}</Column>
+      {paginatedEvents.map((event, index) => (
+        <div key={event.id}>
+          <AccordionItem>
+            <AccordionContent onClick={() => handleToggleAccordion(index)}>
+              <Column>{event.name}</Column>
               <Column>{event.speaker}</Column>
               <Column>{event.date}</Column>
               <Column className="last-child">
@@ -306,39 +298,38 @@ const AccordionEventTable = () => {
               </Column>
             </AccordionContent>
 
-            {openIndex === index && (
+            {isOpen[index] && (
               <MobileRow>
                 <p>{event.speaker}</p>
                 <p>{event.date}</p>
               </MobileRow>
             )}
           </AccordionItem>
+          {/* Pop-up Component */}
+          {isOpen[index] && (
+            <Popup event={event} onClose={() => handleToggleAccordion(index)} />
+          )}
         </div>
       ))}
 
       <PaginationContainer>
         <ButtonContainer>
-          <PageButton
-            disabled={currentPage === 1}
-            onClick={() => handlePageChange(currentPage - 1)}
-          >
+          <PageButton disabled={currentPage === 1} onClick={handlePrevPage}>
             &lt;
           </PageButton>
-          {Array.from({ length: Math.min(4, totalPages) }, (_, index) => {
-            const pageNumber = currentPage + index - 1;
-            return pageNumber > 0 ? (
-              <span
-                key={pageNumber}
-                className={pageNumber === currentPage ? "active" : "inactive"}
-                onClick={() => handlePageChange(pageNumber)}
-              >
-                {pageNumber}
-              </span>
-            ) : null;
-          })}
+          {Array.from({ length: totalPages }, (_, index) => (
+            <span
+              key={index + 1}
+              className={currentPage === index + 1 ? "active" : "inactive"}
+              onClick={() => setCurrentPage(index + 1)}
+              style={{ cursor: "pointer" }}
+            >
+              {index + 1}
+            </span>
+          ))}
           <PageButton
+            onClick={handleNextPage}
             disabled={currentPage === totalPages}
-            onClick={() => handlePageChange(currentPage + 1)}
           >
             &gt;
           </PageButton>
@@ -346,17 +337,19 @@ const AccordionEventTable = () => {
 
         <DropdownContainer>
           <span>Show:</span>
-          <RowsDropdown isActive={isDarkMode}>
-            <option value="5">5 rows</option>
-            <option value="10">10 rows</option>
-            <option value="15">15 rows</option>
+          <RowsDropdown
+            isActive={isDarkMode}
+            onChange={handleRowsChange}
+            value={rowsPerPage}
+          >
+            {[5, 10, 20].map((num) => (
+              <option key={num} value={num}>
+                {num}
+              </option>
+            ))}
           </RowsDropdown>
         </DropdownContainer>
       </PaginationContainer>
-      {/* Pop-up Component */}
-      {isPopupOpen && popupEvent && (
-        <Popup event={popupEvent} onClose={handlePopupClose} />
-      )}
     </AccordionContainer>
   );
 };

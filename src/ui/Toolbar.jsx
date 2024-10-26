@@ -1,6 +1,7 @@
 import styled from "styled-components";
 import { FiSearch, FiChevronDown, FiDownload } from "react-icons/fi";
 import { useDarkMode } from "../context/DarkModeContext";
+import { useEventContext } from "../context/EventContext";
 
 const ToolbarContainer = styled.div`
   font-size: 1.4rem;
@@ -173,36 +174,116 @@ const ExportButton = styled.button`
 
 const Toolbar = () => {
   const { isDarkMode } = useDarkMode();
+  const {
+    searchTerm,
+    setSearchTerm,
+    sortOption,
+    setSortOption,
+    filters,
+    setFilters,
+    filteredEvents,
+    exportEvents,
+  } = useEventContext();
+
+  const handleSearch = (e) => setSearchTerm(e.target.value);
+  const handleSortChange = (e) => setSortOption(e.target.value);
+  const handleFilterChange = (field, value) =>
+    setFilters((prev) => ({ ...prev, [field]: value }));
+
+  // Helper functions to get unique values for filters
+  const getUniqueStatusOptions = () => {
+    const uniqueStatuses = new Set(filteredEvents.map((event) => event.status));
+    return Array.from(uniqueStatuses).map((status) => (
+      <option key={status} value={status}>
+        {status}
+      </option>
+    ));
+  };
+
+  const getUniqueNames = () => {
+    const uniqueNames = new Set(filteredEvents.map((event) => event.name));
+    return Array.from(uniqueNames).map((name) => (
+      <option key={name} value={name}>
+        {name}
+      </option>
+    ));
+  };
+
+  // Sample implementation for Date filtering - Adjust as per your requirements
+  const getDateOptions = () => {
+    // This assumes the events have a date property.
+    const uniqueDates = new Set(filteredEvents.map((event) => event.date));
+    return Array.from(uniqueDates).map((date) => (
+      <option key={date} value={date}>
+        {new Date(date).toLocaleDateString()}
+      </option>
+    ));
+  };
 
   return (
     <ToolbarContainer>
       <FlexDiv>
         <SearchContainer isActive={isDarkMode}>
           <FiSearch />
-          <input type="text" placeholder="Search..." />
+          <input
+            type="text"
+            placeholder="Search..."
+            value={searchTerm}
+            onChange={handleSearch}
+          />
         </SearchContainer>
-        {["Date", "Status", "Name"].map((label) => (
-          <DropdownWrapper key={label}>
-            <Dropdown isActive={isDarkMode}>
-              <option>{label}</option>
-              <option>Option 1</option>
-              <option>Option 2</option>
-            </Dropdown>
-            <ChevronIcon />
-          </DropdownWrapper>
-        ))}
+        <DropdownWrapper>
+          <Dropdown
+            isActive={isDarkMode}
+            value={filters.date}
+            onChange={(e) => handleFilterChange("date", e.target.value)}
+          >
+            <option value="">Date</option>
+            {getDateOptions()}
+          </Dropdown>
+          <ChevronIcon />
+        </DropdownWrapper>
+
+        <DropdownWrapper>
+          <Dropdown
+            isActive={isDarkMode}
+            value={filters.status}
+            onChange={(e) => handleFilterChange("status", e.target.value)}
+          >
+            <option value="">Status</option>
+            {getUniqueStatusOptions()}
+          </Dropdown>
+          <ChevronIcon />
+        </DropdownWrapper>
+
+        <DropdownWrapper>
+          <Dropdown
+            isActive={isDarkMode}
+            value={filters.name}
+            onChange={(e) => handleFilterChange("name", e.target.value)}
+          >
+            <option value="">Name</option>
+            {getUniqueNames()}
+          </Dropdown>
+          <ChevronIcon />
+        </DropdownWrapper>
       </FlexDiv>
 
       <ResultTextDiv>
-        <ResultText>Displaying 100 results</ResultText>
+        <ResultText>Displaying {filteredEvents.length} results</ResultText>
       </ResultTextDiv>
 
       <SortDiv>
         <span>Sort:</span>
         <DropdownWrapper>
-          <Dropdown isActive={isDarkMode}>
-            <option>Most Recent</option>
-            <option>Least Recent</option>
+          <Dropdown
+            isActive={isDarkMode}
+            value={sortOption}
+            onChange={handleSortChange}
+            style={{ width: "2rem" }}
+          >
+            <option value="Most Recent">Most Recent</option>
+            <option value="Least Recent">Least Recent</option>
           </Dropdown>
           <ChevronIcon />
         </DropdownWrapper>
@@ -210,7 +291,7 @@ const Toolbar = () => {
 
       <OptionsDiv>
         <MoreOptions isActive={isDarkMode} />
-        <ExportButton isActive={isDarkMode}>
+        <ExportButton isActive={isDarkMode} onClick={exportEvents}>
           <FiDownload style={{ marginRight: "8px" }} />
           Export
         </ExportButton>
