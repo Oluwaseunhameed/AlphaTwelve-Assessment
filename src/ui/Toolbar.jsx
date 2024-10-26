@@ -220,6 +220,8 @@ const Toolbar = () => {
     ));
   };
 
+  const isMobile = window.innerWidth < 768;
+
   return (
     <ToolbarContainer>
       <FlexDiv>
@@ -256,7 +258,7 @@ const Toolbar = () => {
           <ChevronIcon />
         </DropdownWrapper>
 
-        <DropdownWrapper>
+        <DropdownWrapper style={{ width: isMobile ? "100%" : "9rem" }} >
           <Dropdown
             isActive={isDarkMode}
             value={filters.name}
@@ -280,7 +282,6 @@ const Toolbar = () => {
             isActive={isDarkMode}
             value={sortOption}
             onChange={handleSortChange}
-            style={{ width: "2rem" }}
           >
             <option value="Most Recent">Most Recent</option>
             <option value="Least Recent">Least Recent</option>
