@@ -11,9 +11,10 @@ const AccordionContainer = styled.div`
   padding: 0 0 2rem;
   border-radius: 0.8rem;
   color: var(--color-grey-700);
-  max-width: 120rem;
-  margin: 0 auto;
+  /* max-width: 120rem; */
+  /* margin: 0 auto; */
   font-size: 1.4rem;
+  /* outline: 2px solid red; */
 `;
 
 const HeaderRow = styled.div`
